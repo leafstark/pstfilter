@@ -17,7 +17,24 @@ RAM.
 
 Requires **Node.js >= 20**.
 
+Run it directly with `npx` (no install needed):
+
 ```bash
+npx pstfilter extract archive.pst -k Graylog
+```
+
+Or install it globally:
+
+```bash
+npm install -g pstfilter
+pstfilter extract archive.pst -k Graylog
+```
+
+### From source
+
+```bash
+git clone https://github.com/leafstark/pstfilter.git
+cd pstfilter
 npm install
 npm run build
 ```

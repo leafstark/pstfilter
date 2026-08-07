@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { isAbsolute, relative, resolve } from "node:path";
 
 import { ConfigError } from "../core/errors.js";
 import type { ProcessingOptions } from "../core/types.js";
@@ -96,9 +96,56 @@ export async function resolveConfig(
     maxEmails,
   };
 
+  assertSafeOutputPath(options.inputPath, options.outputPath, raw.overwrite);
+
   const logLevel: LogLevel = raw.quiet ? "quiet" : raw.verbose ? "verbose" : "normal";
 
   return { options, logLevel };
+}
+
+/**
+ * Guard against destructive `--overwrite` mistakes. The output directory is
+ * wiped before writing, so refuse output paths that would delete the input PST
+ * or an important enclosing/working directory.
+ */
+function assertSafeOutputPath(
+  inputPath: string,
+  outputPath: string,
+  overwrite: boolean,
+): void {
+  if (outputPath === inputPath) {
+    throw new ConfigError("Output path cannot be the input PST file.");
+  }
+
+  // If the output directory contains the input PST, removing it (with
+  // --overwrite) would delete the source file.
+  if (isInside(inputPath, outputPath)) {
+    throw new ConfigError(
+      "Output path cannot contain the input PST file; --overwrite would delete it.",
+    );
+  }
+
+  if (!overwrite) {
+    return;
+  }
+
+  const cwd = resolve(process.cwd());
+  const root = resolve("/");
+
+  if (outputPath === root) {
+    throw new ConfigError("Refusing to use --overwrite on the filesystem root.");
+  }
+  if (outputPath === cwd || isInside(cwd, outputPath)) {
+    throw new ConfigError(
+      "Refusing to use --overwrite on the current working directory or a parent of it. Use a dedicated output directory.",
+    );
+  }
+}
+
+/** True if `child` is `parent` itself or nested somewhere below `parent`. */
+function isInside(child: string, parent: string): boolean {
+  const rel = relative(parent, child);
+  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
 }
 
 async function collectKeywords(raw: RawExtractOptions): Promise<string[]> {

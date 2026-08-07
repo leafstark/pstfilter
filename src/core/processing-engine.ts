@@ -6,7 +6,7 @@ import type { ProgressReporter } from "../progress/progress-reporter.js";
 import type { PstReader } from "../pst/pst-reader.js";
 import { writeManifest } from "../output/stats-writer.js";
 import { fingerprintFile, pathExists } from "../utils/filesystem.js";
-import { ParserFatalError } from "./errors.js";
+import { FilesystemError, ParserFatalError } from "./errors.js";
 import type { ProcessingOptions, RunSummary, SearchableEmail } from "./types.js";
 
 /**
@@ -78,6 +78,12 @@ export class ProcessingEngine {
             }
           }
         } catch (err) {
+          // Output/filesystem failures (disk full, permissions, ...) are fatal
+          // and must surface as a filesystem error (exit 4), not be counted as
+          // a single recoverable email failure (exit 1).
+          if (err instanceof FilesystemError) {
+            throw err;
+          }
           this.progress.recordFailure();
           this.progress.debug(
             `Recoverable error processing a message: ${errMessage(err)}`,

@@ -46,8 +46,11 @@ export function compileKeywords(
   const specs: KeywordSpec[] = [];
 
   for (const original of trimmed) {
-    // De-duplicate case-insensitively for substring mode, exactly for regex.
-    const dedupeKey = match.regex ? original : original.toLowerCase();
+    // De-duplicate case-insensitively only for case-insensitive substring mode.
+    // Regex and case-sensitive modes must keep e.g. `Graylog` and `graylog`
+    // distinct.
+    const dedupeKey =
+      match.regex || match.caseSensitive ? original : original.toLowerCase();
     if (seen.has(dedupeKey)) {
       continue;
     }

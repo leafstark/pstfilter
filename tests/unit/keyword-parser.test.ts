@@ -47,6 +47,13 @@ describe("compileKeywords", () => {
     expect(specs).toHaveLength(1);
   });
 
+  it("keeps case variants distinct in case-sensitive mode", () => {
+    const caseSensitive: MatchOptions = { ...baseMatch, caseSensitive: true };
+    const specs = compileKeywords(["Graylog", "graylog"], caseSensitive);
+    expect(specs).toHaveLength(2);
+    expect(specs.map((s) => s.original)).toEqual(["Graylog", "graylog"]);
+  });
+
   it("compiles regexes eagerly and fails fast on invalid regex", () => {
     const regexMatch: MatchOptions = { ...baseMatch, regex: true };
     expect(() => compileKeywords(["gr[aylog"], regexMatch)).toThrow(ConfigError);

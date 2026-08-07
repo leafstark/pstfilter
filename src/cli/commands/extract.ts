@@ -8,9 +8,8 @@ import { SimpleKeywordMatcher } from "../../matching/keyword-matcher.js";
 import { OutputManager } from "../../output/output-manager.js";
 import { ProgressReporter } from "../../progress/progress-reporter.js";
 import { PstExtractorReader } from "../../pst/pst-extractor-reader.js";
+import { VERSION } from "../../version.js";
 import { resolveConfig, type RawExtractOptions } from "../options.js";
-
-const VERSION = "0.1.0";
 
 /**
  * Execute the `extract` command. Returns the process exit code.

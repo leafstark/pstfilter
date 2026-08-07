@@ -229,15 +229,15 @@ export class PstExtractorReader implements PstReader {
   }
 
   private extractInternalId(message: PSTMessage): string | undefined {
-    const nodeId = safeCall(
-      () =>
-        (message as unknown as { descriptorNode?: { descriptorIdentifier?: number } })
-          .descriptorNode?.descriptorIdentifier,
-    );
-    if (typeof nodeId === "number") {
-      return String(nodeId);
+    // `descriptorNodeId` is the stable descriptor identifier exposed by
+    // pst-extractor (a `long` value). It is unique within a PST and does not
+    // change between runs, so it is the preferred basis for a stable email id.
+    const nodeId = safeCall(() => message.descriptorNodeId);
+    if (nodeId === undefined || nodeId === null) {
+      return undefined;
     }
-    return undefined;
+    const asString = String(nodeId);
+    return asString.length > 0 && asString !== "0" ? asString : undefined;
   }
 }
 

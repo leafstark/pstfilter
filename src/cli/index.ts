@@ -2,10 +2,9 @@
 import { Command, Option } from "commander";
 
 import { PstFilterError, ExitCode } from "../core/errors.js";
+import { VERSION } from "../version.js";
 import { runExtract } from "./commands/extract.js";
 import type { RawExtractOptions } from "./options.js";
-
-const VERSION = "0.1.0";
 
 function buildProgram(): Command {
   const program = new Command();

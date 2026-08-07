@@ -12,8 +12,17 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leafstark/pstfilter.git"
+  },
+  "homepage": "https://github.com/leafstark/pstfilter#readme",
+  "bugs": {
+    "url": "https://github.com/leafstark/pstfilter/issues"
+  },
   "files": [
     "dist",
+    "docs",
     "README.md",
     "LICENSE"
   ],
