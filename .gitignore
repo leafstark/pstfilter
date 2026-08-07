@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+coverage/
+.npm-cache/
+
+# Local output & test data
+output/
+pstfilter-output/
+test-data/
+*.pst
+
+# Editor
+.idea/
+.vscode/

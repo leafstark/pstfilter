@@ -1,0 +1,58 @@
+{
+  "name": "pstfilter",
+  "version": "0.1.0",
+  "description": "Local-first CLI to scan large Outlook .pst files and extract emails matching keywords in subject/body.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "pstfilter": "dist/cli/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli/index.ts",
+    "start": "node dist/cli/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "pst",
+    "outlook",
+    "email",
+    "keyword",
+    "extract",
+    "cli",
+    "forensics",
+    "local-first"
+  ],
+  "dependencies": {
+    "commander": "^12.1.0",
+    "html-to-text": "^9.0.5",
+    "pst-extractor": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/html-to-text": "^9.0.4",
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.7",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}
