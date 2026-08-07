@@ -1,6 +1,6 @@
 {
   "name": "pstfilter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Local-first CLI to scan large Outlook .pst files and extract emails matching keywords in subject/body.",
   "license": "MIT",
   "type": "module",
@@ -22,12 +22,14 @@
   },
   "files": [
     "dist",
+    "assets",
     "docs",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "postbuild": "node -e \"require('node:fs').chmodSync('dist/cli/index.js', 0o755)\"",
     "dev": "tsx src/cli/index.ts",
     "start": "node dist/cli/index.js",
     "test": "vitest run",
@@ -42,11 +44,15 @@
     "pst",
     "outlook",
     "email",
-    "keyword",
+    "search",
+    "filter",
     "extract",
     "cli",
-    "forensics",
-    "local-first"
+    "jsonl",
+    "markdown",
+    "local-first",
+    "email-analysis",
+    "llm"
   ],
   "dependencies": {
     "commander": "^12.1.0",

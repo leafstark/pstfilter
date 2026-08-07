@@ -1,17 +1,23 @@
 # PSTFilter
 
-A **local-first, open-source CLI** that scans very large Microsoft Outlook `.pst`
-files and extracts emails whose **subject or body contains one or more
-user-provided keywords**.
+**Filter huge Outlook PST files by subject/body keywords and export compact,
+AI-ready results — locally.**
 
-Each keyword produces its own independent result set. The PST is scanned only
-**once**, streaming, with bounded memory — a 50 GB PST does not require 50 GB of
-RAM.
+Each keyword gets its own independent result set. PSTFilter scans the archive
+only **once**, streaming, with bounded memory — memory usage stays bounded
+instead of scaling with PST size, making it suitable for multi-GB PST files.
 
 - No OpenAI / Anthropic / any LLM required
 - No Outlook required
 - No cloud upload, no telemetry, no API keys
 - Everything runs locally and offline
+
+## CLI demo
+
+This is a real local extraction run against the sample PST bundled with
+`pst-extractor`:
+
+![PSTFilter terminal demo](assets/pstfilter-cli-demo.gif)
 
 ## Install
 
@@ -29,6 +35,9 @@ Or install it globally:
 npm install -g pstfilter
 pstfilter extract archive.pst -k Graylog
 ```
+
+> **Windows:** if PowerShell blocks `npx.ps1` due to its execution policy, use
+> `npx.cmd pstfilter ...` instead.
 
 ### From source
 
