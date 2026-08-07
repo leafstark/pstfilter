@@ -1,6 +1,6 @@
 {
   "name": "pstfilter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local-first CLI to scan large Outlook .pst files and extract emails matching keywords in subject/body.",
   "license": "MIT",
   "type": "module",
