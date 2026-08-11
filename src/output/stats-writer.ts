@@ -6,14 +6,12 @@ import type {
   KeywordSpec,
   KeywordStats,
   RunStatus,
+  SelectionMode,
   SourceFingerprint,
 } from "../core/types.js";
 
 /** Write a keyword's stats.json. */
-export async function writeStats(
-  dir: string,
-  stats: KeywordStats,
-): Promise<void> {
+export async function writeStats(dir: string, stats: KeywordStats): Promise<void> {
   const path = join(dir, "stats.json");
   try {
     await writeFile(path, JSON.stringify(stats, null, 2) + "\n", "utf8");
@@ -25,6 +23,7 @@ export async function writeStats(
 export interface ManifestInput {
   outputPath: string;
   fingerprint: SourceFingerprint;
+  selectionMode: SelectionMode;
   keywords: KeywordSpec[];
   perKeyword: Record<string, KeywordStats>;
   processedEmails: number;
@@ -39,6 +38,7 @@ export async function writeManifest(input: ManifestInput): Promise<void> {
   const manifest = {
     version: 1,
     status: input.status,
+    selectionMode: input.selectionMode,
     source: {
       filename: basename(input.fingerprint.absolutePath),
       path: input.fingerprint.absolutePath,

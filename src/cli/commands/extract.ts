@@ -3,7 +3,7 @@ import { basename } from "node:path";
 
 import { ProcessingEngine } from "../../core/processing-engine.js";
 import { ExitCode } from "../../core/errors.js";
-import type { RunSummary } from "../../core/types.js";
+import type { RunSummary, SelectionMode } from "../../core/types.js";
 import { SimpleKeywordMatcher } from "../../matching/keyword-matcher.js";
 import { OutputManager } from "../../output/output-manager.js";
 import { ProgressReporter } from "../../progress/progress-reporter.js";
@@ -26,7 +26,12 @@ export async function runExtract(
   const inputSize = await fileSize(options.inputPath);
 
   if (logLevel !== "quiet") {
-    printHeader(pstFile, inputSize, options.keywords.length);
+    printHeader(
+      pstFile,
+      inputSize,
+      options.selectionMode ?? "keywords",
+      options.keywords.length,
+    );
   }
 
   const progress = new ProgressReporter(logLevel);
@@ -74,24 +79,33 @@ export async function runExtract(
   return ExitCode.Success;
 }
 
-function printHeader(pstFile: string, size: number | null, keywordCount: number): void {
+function printHeader(
+  pstFile: string,
+  size: number | null,
+  selectionMode: SelectionMode,
+  keywordCount: number,
+): void {
   const lines = [
     `PSTFilter ${VERSION}`,
     "",
     `Input: ${basename(pstFile)}`,
     `Size: ${size !== null ? formatBytes(size) : "(unknown)"}`,
-    `Keywords: ${keywordCount}`,
+    selectionMode === "all" ? "Mode: all emails" : `Keywords: ${keywordCount}`,
     "",
   ];
   process.stderr.write(lines.join("\n") + "\n");
 }
 
 function printSummary(
-  options: { outputPath: string; keywords: { id: string; original: string }[] },
+  options: {
+    outputPath: string;
+    selectionMode?: SelectionMode;
+    keywords: { id: string; original: string }[];
+  },
   summary: RunSummary,
 ): void {
   const out: string[] = [];
-  out.push("Matches:");
+  out.push(options.selectionMode === "all" ? "Exported:" : "Matches:");
 
   const maxLen = Math.max(...options.keywords.map((k) => k.original.length), 4);
   for (const spec of options.keywords) {

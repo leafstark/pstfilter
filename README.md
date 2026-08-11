@@ -1,7 +1,7 @@
 # PSTFilter
 
-**Filter huge Outlook PST files by subject/body keywords and export compact,
-AI-ready results — locally.**
+**Filter huge Outlook PST files by subject/body keywords—or convert every
+email—and export compact, AI-ready JSONL and Markdown locally.**
 
 Each keyword gets its own independent result set. PSTFilter scans the archive
 only **once**, streaming, with bounded memory — memory usage stays bounded
@@ -63,6 +63,16 @@ Or read keywords from a file:
 pstfilter extract archive.pst --keywords-file keywords.txt
 ```
 
+Or explicitly export every email without keyword filtering:
+
+```bash
+pstfilter extract archive.pst --all
+```
+
+Full export is opt-in because PST archives can be very large. Omitting both a
+keyword source and `--all` is an error, and `--all` cannot be combined with
+`--keyword` or `--keywords-file`.
+
 `keywords.txt` — blank lines ignored, lines beginning with `#` are comments:
 
 ```
@@ -100,12 +110,16 @@ output/
 An email whose subject is `Graylog incident follow-up` is written into **both**
 `output/graylog/` and `output/incident/`, but never `output/kubernetes/`.
 
+With `--all`, every email is written once under `output/all/`; its
+`matchedKeywords` field is an empty array because no keyword matching occurred.
+
 ## Options
 
 | Option | Description | Default |
 | --- | --- | --- |
 | `-k, --keyword <value>` | Keyword; repeatable | — |
 | `--keywords-file <path>` | Read keywords from a text file | — |
+| `--all` | Export every email without keyword filtering | off |
 | `-o, --output <path>` | Output directory | `./pstfilter-output` |
 | `--case-sensitive` | Case-sensitive matching | off |
 | `--regex` | Treat keywords as regular expressions | off |
@@ -121,7 +135,8 @@ An email whose subject is `Graylog incident follow-up` is written into **both**
 | `--quiet` / `--verbose` | Logging verbosity | normal |
 | `--max-emails <n>` | Stop after N emails (testing/debugging) | — |
 
-`--subject-only` and `--body-only` together is a configuration error.
+`--subject-only` and `--body-only` together is a configuration error. `--all`
+is mutually exclusive with `--keyword` and `--keywords-file`.
 
 ## Exit codes
 
@@ -145,9 +160,10 @@ npm run build   # emit dist/
 
 ## Scope
 
-V0.1 implements streaming extraction, HTML→text, independent multi-keyword
-substring matching (with optional `--regex`), JSONL + Markdown output,
-statistics, progress reporting, graceful error handling and Ctrl-C flushing.
+V0.2 implements streaming extraction, opt-in full-archive conversion,
+HTML→text, independent multi-keyword substring matching (with optional
+`--regex`), JSONL + Markdown output, statistics, progress reporting, graceful
+error handling and Ctrl-C flushing.
 
 Attachment binaries are **not** extracted — only filename/size metadata is
 recorded. See [docs/architecture.md](docs/architecture.md) for design details

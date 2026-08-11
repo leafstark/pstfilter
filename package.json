@@ -1,7 +1,7 @@
 {
   "name": "pstfilter",
-  "version": "0.1.2",
-  "description": "Local-first CLI to scan large Outlook .pst files and extract emails matching keywords in subject/body.",
+  "version": "0.2.0",
+  "description": "Local-first CLI to filter or convert Outlook .pst email archives to JSONL and Markdown.",
   "license": "MIT",
   "type": "module",
   "engines": {

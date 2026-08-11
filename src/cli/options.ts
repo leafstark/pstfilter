@@ -10,6 +10,7 @@ import type { LogLevel } from "../progress/progress-reporter.js";
 export interface RawExtractOptions {
   keyword?: string[];
   keywordsFile?: string;
+  all: boolean;
   output: string;
   caseSensitive: boolean;
   regex: boolean;
@@ -54,9 +55,15 @@ export async function resolveConfig(
     );
   }
 
-  const rawKeywords = await collectKeywords(raw);
-  if (rawKeywords.length === 0) {
-    throw new ConfigError("No keywords provided. Use --keyword or --keywords-file.");
+  if (raw.all && ((raw.keyword?.length ?? 0) > 0 || raw.keywordsFile)) {
+    throw new ConfigError("--all cannot be used with --keyword or --keywords-file.");
+  }
+
+  const rawKeywords = raw.all ? [] : await collectKeywords(raw);
+  if (!raw.all && rawKeywords.length === 0) {
+    throw new ConfigError(
+      "No keywords provided. Use --keyword, --keywords-file, or --all.",
+    );
   }
 
   const match = {
@@ -66,7 +73,9 @@ export async function resolveConfig(
     body: !raw.subjectOnly,
   };
 
-  const keywords = compileKeywords(rawKeywords, match);
+  const keywords = raw.all
+    ? [{ id: "all", original: "All emails", normalized: "" }]
+    : compileKeywords(rawKeywords, match);
 
   const chunkEmails = parsePositiveInt(raw.chunkEmails, "--chunk-emails");
   const chunkChars = parsePositiveInt(raw.chunkChars, "--chunk-chars");
@@ -78,6 +87,7 @@ export async function resolveConfig(
   const options: ProcessingOptions = {
     inputPath: resolve(pstFile),
     outputPath: resolve(raw.output),
+    selectionMode: raw.all ? "all" : "keywords",
     keywords,
     match,
     cleanup: {

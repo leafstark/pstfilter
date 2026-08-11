@@ -66,13 +66,16 @@ export class ProcessingEngine {
 
         try {
           const email = normalizeEmail(raw, options.cleanup);
-          const searchable = this.toSearchable(email, options);
-          const matched = this.matcher.match(searchable);
+          const matched =
+            options.selectionMode === "all"
+              ? options.keywords.map((spec) => spec.id)
+              : this.matcher.match(this.toSearchable(email, options));
 
           if (matched.length > 0) {
-            email.matchedKeywords = matched.map((id) =>
-              this.keywordOriginal(options, id),
-            );
+            email.matchedKeywords =
+              options.selectionMode === "all"
+                ? []
+                : matched.map((id) => this.keywordOriginal(options, id));
             for (const keywordId of matched) {
               await this.output.write(keywordId, email);
             }
@@ -105,6 +108,7 @@ export class ProcessingEngine {
     await writeManifest({
       outputPath: options.outputPath,
       fingerprint,
+      selectionMode: options.selectionMode ?? "keywords",
       keywords: options.keywords,
       perKeyword,
       processedEmails: this.progress.processedCount,

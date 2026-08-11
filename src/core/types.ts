@@ -121,11 +121,16 @@ export interface OutputFormatOptions {
   markdown: boolean;
 }
 
+/** How messages are selected for export. */
+export type SelectionMode = "keywords" | "all";
+
 /** Full options object consumed by the ProcessingEngine. */
 export interface ProcessingOptions {
   inputPath: string;
   outputPath: string;
 
+  /** Omitted programmatically means keyword matching. */
+  selectionMode?: SelectionMode;
   keywords: KeywordSpec[];
 
   match: MatchOptions;

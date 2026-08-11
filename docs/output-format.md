@@ -23,6 +23,9 @@ Path separators, `..`, control characters and reserved Windows device names are
 neutralized; Unicode letters (including Chinese) are preserved. Collisions get a
 numeric suffix (`incident`, `incident-2`).
 
+In `--all` mode there is one output target, `all/`, containing every email in
+the archive. The same JSONL, Markdown chunk, and statistics formats are used.
+
 ## `emails.jsonl`
 
 One JSON object per line (JSONL) — appendable, streamable, and easy to process
@@ -45,6 +48,8 @@ Fields:
 | `folderPath` | string \| null | Source folder path within the PST. |
 | `attachments` | object[] | `{ filename, size? }` — **metadata only**, no binaries. |
 | `matchedKeywords` | string[] | Original keyword strings this email matched. |
+
+In `--all` mode, `matchedKeywords` is always `[]` because matching is bypassed.
 
 ## `chunks/chunk-NNNN.md`
 
@@ -94,6 +99,7 @@ We have completed the Graylog configuration...
 {
   "version": 1,
   "status": "completed",
+  "selectionMode": "keywords",
   "source": {
     "filename": "archive.pst",
     "path": "/abs/path/archive.pst",
@@ -118,3 +124,7 @@ We have completed the Graylog configuration...
 `status` is `"interrupted"` when the run was stopped with Ctrl-C. The source
 fingerprint hashes only the first and last 1 MB — never the whole file — so it
 is cheap even for a 50 GB PST and can back future resume verification.
+
+`selectionMode` is `"keywords"` for filtered exports and `"all"` for explicit
+full-archive conversion. In all mode, the manifest contains one output entry:
+`{ "keyword": "All emails", "slug": "all", ... }`.

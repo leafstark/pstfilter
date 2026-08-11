@@ -11,17 +11,16 @@ function buildProgram(): Command {
 
   program
     .name("pstfilter")
-    .description(
-      "Scan large Outlook .pst files and extract emails matching keywords in subject/body.",
-    )
+    .description("Filter or convert large Outlook .pst files into JSONL and Markdown.")
     .version(VERSION, "-V, --version", "Print version and exit");
 
   program
     .command("extract", { isDefault: true })
-    .description("Extract emails matching keywords from a PST file")
+    .description("Filter matching emails or export every email from a PST file")
     .argument("<pst-file>", "Path to the input .pst file")
     .option("-k, --keyword <value>", "Keyword to match (repeatable)", collect, [])
     .option("--keywords-file <path>", "Read keywords from a text file")
+    .option("--all", "Export all emails without keyword filtering", false)
     .option("-o, --output <path>", "Output directory", "./pstfilter-output")
     .option("--case-sensitive", "Case-sensitive matching", false)
     .option("--regex", "Treat keywords as regular expressions", false)
@@ -56,6 +55,7 @@ function toRawOptions(opts: Record<string, unknown>): RawExtractOptions {
   return {
     keyword: (opts.keyword as string[]) ?? [],
     keywordsFile: opts.keywordsFile as string | undefined,
+    all: Boolean(opts.all),
     output: opts.output as string,
     caseSensitive: Boolean(opts.caseSensitive),
     regex: Boolean(opts.regex),

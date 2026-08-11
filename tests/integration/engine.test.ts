@@ -73,6 +73,7 @@ describe("ProcessingEngine end-to-end", () => {
     const options: ProcessingOptions = {
       inputPath,
       outputPath: outDir,
+      selectionMode: "keywords",
       keywords,
       match,
       cleanup: { stripHtml: true, stripQuotedReplies: false },
@@ -109,6 +110,7 @@ describe("ProcessingEngine end-to-end", () => {
     // Manifest exists at root and reports counts.
     const manifest = JSON.parse(await readFile(join(outDir, "manifest.json"), "utf8"));
     expect(manifest.version).toBe(1);
+    expect(manifest.selectionMode).toBe("keywords");
     expect(manifest.processedEmails).toBe(3);
     const byKeyword = Object.fromEntries(
       manifest.keywords.map((k: { keyword: string; matches: number }) => [
@@ -119,6 +121,51 @@ describe("ProcessingEngine end-to-end", () => {
     expect(byKeyword.Graylog).toBe(1);
     expect(byKeyword.Incident).toBe(1);
     expect(byKeyword.Kubernetes).toBe(1);
+  });
+
+  it("exports every email to all/ in all mode without fake keyword matches", async () => {
+    const emails = [
+      raw("Graylog incident follow-up", "", "m1"),
+      raw("Kubernetes rollout", "cluster notes", "m2"),
+      raw("Weekly newsletter", "nothing relevant", "m3"),
+    ];
+    const reader = new FakePstReader(emails);
+    const keywords = [{ id: "all", original: "All emails", normalized: "" }];
+    const options: ProcessingOptions = {
+      inputPath,
+      outputPath: outDir,
+      selectionMode: "all",
+      keywords,
+      match,
+      cleanup: { stripHtml: true, stripQuotedReplies: false },
+      chunks: { maxEmails: 200, maxCharacters: 1_000_000 },
+      formats: { jsonl: true, markdown: true },
+      overwrite: true,
+    };
+
+    const engine = new ProcessingEngine(
+      reader,
+      new SimpleKeywordMatcher([], match),
+      new OutputManager(outDir, options.formats, options.chunks, true),
+      new ProgressReporter("quiet"),
+    );
+
+    const summary = await engine.run(options);
+    const exported = await readLines(outDir, "all");
+
+    expect(reader.iterations).toBe(1);
+    expect(exported).toHaveLength(3);
+    expect(exported.map((email) => email.subject)).toEqual(
+      emails.map((email) => email.subject),
+    );
+    expect(exported.every((email) => email.matchedKeywords.length === 0)).toBe(true);
+    expect(summary.perKeyword.all?.matchedEmails).toBe(3);
+
+    const manifest = JSON.parse(await readFile(join(outDir, "manifest.json"), "utf8"));
+    expect(manifest.selectionMode).toBe("all");
+    expect(manifest.keywords).toEqual([
+      { keyword: "All emails", slug: "all", matches: 3 },
+    ]);
   });
 
   it("stops after maxEmails", async () => {
@@ -150,7 +197,7 @@ describe("ProcessingEngine end-to-end", () => {
 async function readLines(
   outDir: string,
   slug: string,
-): Promise<Array<{ subject: string }>> {
+): Promise<Array<{ subject: string; matchedKeywords: string[] }>> {
   const content = await readFile(join(outDir, slug, "emails.jsonl"), "utf8");
   return content
     .trim()
