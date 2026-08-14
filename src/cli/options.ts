@@ -114,7 +114,7 @@ export async function resolveConfig(
 }
 
 /**
- * Guard against destructive `--overwrite` mistakes. The output directory is
+ * Guard against destructive `--overwrite` mistakes. Per-run subdirectories are
  * wiped before writing, so refuse output paths that would delete the input PST
  * or an important enclosing/working directory.
  */

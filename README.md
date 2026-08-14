@@ -131,7 +131,7 @@ With `--all`, every email is written once under `output/all/`; its
 | `--chunk-chars <n>` | Characters per Markdown chunk | `1000000` |
 | `--no-jsonl` | Disable JSONL output | (jsonl on) |
 | `--no-markdown` | Disable Markdown output | (markdown on) |
-| `--overwrite` | Replace an existing output directory | off |
+| `--overwrite` | Replace this run's output subdirectories if they already exist | off |
 | `--quiet` / `--verbose` | Logging verbosity | normal |
 | `--max-emails <n>` | Stop after N emails (testing/debugging) | — |
 

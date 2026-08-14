@@ -83,11 +83,40 @@ describe("OutputManager pipeline", () => {
     expect(perKeyword.graylog!.firstEmailDate).not.toBeNull();
   });
 
-  it("rejects existing output dir without overwrite", async () => {
+  it("rejects an existing keyword subdir without overwrite", async () => {
     const chunks: ChunkConfig = { maxEmails: 2, maxCharacters: 1_000_000 };
+    // First run creates the graylog/ subdir.
     const om1 = new OutputManager(dir, formats, chunks, false);
-    // dir already exists (created by mkdtemp) -> should throw.
-    await expect(om1.initialize(keywords)).rejects.toThrow();
+    await om1.initialize(keywords);
+    await om1.finalize();
+    // Second run into the same keyword subdir without --overwrite -> throws.
+    const om2 = new OutputManager(dir, formats, chunks, false);
+    await expect(om2.initialize(keywords)).rejects.toThrow();
+  });
+
+  it("merges a new mode alongside existing results", async () => {
+    const chunks: ChunkConfig = { maxEmails: 2, maxCharacters: 1_000_000 };
+    // First run: keyword extraction.
+    const om1 = new OutputManager(dir, formats, chunks, false);
+    await om1.initialize(keywords);
+    await om1.write("graylog", record(1));
+    await om1.finalize();
+
+    // Second run: --all into the same output dir (different subdir) succeeds
+    // without --overwrite and leaves the earlier results untouched.
+    const allKeywords: KeywordSpec[] = [
+      { id: "all", original: "All emails", normalized: "" },
+    ];
+    const om2 = new OutputManager(dir, formats, chunks, false);
+    await om2.initialize(allKeywords);
+    await om2.finalize();
+
+    const entries = (await readdir(dir)).sort();
+    expect(entries).toContain("all");
+    expect(entries).toContain("graylog");
+    // Earlier keyword results survived.
+    const jsonl = await readFile(join(dir, "graylog", "emails.jsonl"), "utf8");
+    expect(jsonl.trim().split("\n")).toHaveLength(1);
   });
 
   it("closes a chunk on character limit", async () => {

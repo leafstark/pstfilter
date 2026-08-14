@@ -168,6 +168,42 @@ describe("ProcessingEngine end-to-end", () => {
     ]);
   });
 
+  it("merges the manifest across runs into the same output directory", async () => {
+    const base = {
+      inputPath,
+      outputPath: outDir,
+      selectionMode: "keywords" as const,
+      match,
+      cleanup: { stripHtml: true, stripQuotedReplies: false },
+      chunks: { maxEmails: 200, maxCharacters: 1_000_000 },
+      formats: { jsonl: true, markdown: false },
+      overwrite: false,
+    };
+
+    // First run: keyword "Graylog".
+    const graylogKeywords = compileKeywords(["Graylog"], match);
+    await new ProcessingEngine(
+      new FakePstReader([raw("Graylog incident", "", "m1")]),
+      new SimpleKeywordMatcher(graylogKeywords, match),
+      new OutputManager(outDir, base.formats, base.chunks, false),
+      new ProgressReporter("quiet"),
+    ).run({ ...base, keywords: graylogKeywords });
+
+    // Second run: keyword "Kubernetes" into the same output directory.
+    const k8sKeywords = compileKeywords(["Kubernetes"], match);
+    await new ProcessingEngine(
+      new FakePstReader([raw("Kubernetes rollout", "", "m2")]),
+      new SimpleKeywordMatcher(k8sKeywords, match),
+      new OutputManager(outDir, base.formats, base.chunks, false),
+      new ProgressReporter("quiet"),
+    ).run({ ...base, keywords: k8sKeywords });
+
+    const manifest = JSON.parse(await readFile(join(outDir, "manifest.json"), "utf8"));
+    const slugs = manifest.keywords.map((k: { slug: string }) => k.slug).sort();
+    // The earlier run's keyword is preserved alongside the latest run's.
+    expect(slugs).toEqual(["graylog", "kubernetes"]);
+  });
+
   it("stops after maxEmails", async () => {
     const emails = Array.from({ length: 10 }, (_, i) => raw(`Graylog ${i}`, "", `m${i}`));
     const reader = new FakePstReader(emails);

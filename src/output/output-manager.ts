@@ -39,19 +39,22 @@ export class OutputManager {
 
   /** Create output directories and open per-keyword writers. */
   async initialize(keywords: KeywordSpec[]): Promise<void> {
-    if (await pathExists(this.outputPath)) {
-      if (!this.overwrite) {
-        throw new ConfigError(
-          `Output directory already exists: ${this.outputPath} (use --overwrite to replace)`,
-        );
-      }
-      await removeDir(this.outputPath);
-    }
-
     await ensureDir(this.outputPath);
 
     for (const spec of keywords) {
       const dir = join(this.outputPath, spec.id);
+
+      // Conflicts are scoped to the specific subdirectory this run writes, so
+      // a new run (e.g. --all) can coexist with results from earlier runs.
+      // --overwrite replaces only this subdirectory, never sibling results.
+      if (await pathExists(dir)) {
+        if (!this.overwrite) {
+          throw new ConfigError(
+            `Output already exists for "${spec.original}": ${dir} (use --overwrite to replace it)`,
+          );
+        }
+        await removeDir(dir);
+      }
       await ensureDir(dir);
 
       let markdown: MarkdownChunker | null = null;

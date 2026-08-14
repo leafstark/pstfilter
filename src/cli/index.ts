@@ -32,7 +32,11 @@ function buildProgram(): Command {
     .option("--chunk-chars <number>", "Characters per Markdown chunk", "1000000")
     .option("--no-jsonl", "Disable JSONL output")
     .option("--no-markdown", "Disable Markdown chunk output")
-    .option("--overwrite", "Replace existing output directory", false)
+    .option(
+      "--overwrite",
+      "Replace this run's output subdirectories if they already exist",
+      false,
+    )
     .addOption(new Option("--quiet", "Minimal logging").default(false))
     .addOption(new Option("--verbose", "Detailed technical logging").default(false))
     .option("--max-emails <number>", "Stop after N emails (testing/debugging only)")
