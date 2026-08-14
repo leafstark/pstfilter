@@ -1,6 +1,6 @@
 {
   "name": "pstfilter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Local-first CLI to filter or convert Outlook .pst email archives to JSONL and Markdown.",
   "license": "MIT",
   "type": "module",
